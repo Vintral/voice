@@ -20,7 +20,7 @@ services:
       OTEL_SERVICE_NAME: "voice-backend"
       OTEL_LOG_LEVEL: "info"
     ports:
-      - '${BACK_END_PORT}}:${PORT}'
+      - '3001:${PORT}'
     depends_on:
       - mysql
   frontend:
