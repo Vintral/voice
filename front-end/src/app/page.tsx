@@ -9,9 +9,6 @@ import {
   TestPayload, 
 //  Payload 
 } from './types';
-import { useSession } from "next-auth/react";
-import { SignIn, SignOut } from "./components/auth-buttons";
-import Link from "next/link";
 import { getServerSession } from "next-auth/next";
 
 export default async function Home() {
@@ -163,19 +160,14 @@ export default async function Home() {
   //   </main>
   // )
 
-  const session = await getServerSession();
-
-  if (!session) {
-    return <SignIn />
-  }
+  const session = await getServerSession();  
     
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">      
       <>
         <p className="text-3xl">
           Welcome to the App, {session?.user?.name}! You&apos;re authenticated!
-        </p>
-        <SignOut />
+        </p>        
       </>
     </main>
   )

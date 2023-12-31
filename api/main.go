@@ -92,12 +92,12 @@ func setupRoutes() (router *gin.Engine) {
 
 	userRoutes := router.Group("/user", Authorizer())
 	{
-		userRoutes.GET("/user", controller.GetUser)
-		userRoutes.PATCH("/user", controller.PatchUser)
+		userRoutes.GET("/", controller.GetUser)
+		userRoutes.PATCH("/", controller.PatchUser)
 
-		userRoutes.POST("/user/donation", controller.PostDonation)
-		userRoutes.GET("/user/donations", controller.GetDonations)
-		userRoutes.DELETE("/user/donation/:guid", controller.DeleteDonation)
+		userRoutes.POST("/donation", controller.PostDonation)
+		userRoutes.GET("/donations", controller.GetDonations)
+		userRoutes.DELETE("/donation/:guid", controller.DeleteDonation)
 	}
 
 	return

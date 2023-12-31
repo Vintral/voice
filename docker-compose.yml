@@ -31,13 +31,13 @@ services:
     environment:
       - PORT=${PORT}
     ports:
-      - '${FRONT_END_PORT}:${PORT}'
+      - '3000:${PORT}'
   grafana:
     image: grafana/grafana-enterprise
     container_name: grafana
     restart: unless-stopped
     ports:
-     - '${GRAFANA_PORT}:3000'
+     - '3004:3000'
     volumes:
       - grafana:/var/lib/grafana
   otel-collector:
@@ -74,9 +74,9 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     ports:
-      - ${MYSQL_PORT}:${MYSQL_PORT}
+      - 3306:${MYSQL_PORT}
     expose:
-      - ${MYSQL_PORT}
+      - 3306
     volumes:
       - mysql:/var/lib/mysql
 volumes:
