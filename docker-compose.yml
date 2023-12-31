@@ -1,0 +1,87 @@
+version: '3.5'
+
+services:
+  backend:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: voice-backend
+    environment:
+      PORT: ${PORT}
+      HOST: 0.0.0.0
+      GIN_MODE: ${GIN_MODE}
+      DB_HOST: mysql
+      DB_PORT: ${MYSQL_PORT}
+      DB_USER: ${MYSQL_USER}
+      DB_PASSWORD: ${MYSQL_PASSWORD}
+      DB_NAME: ${MYSQL_DATABASE}
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4318"
+      OTEL_EXPORTER_HOST: "otel-collector"
+      OTEL_SERVICE_NAME: "voice-backend"
+      OTEL_LOG_LEVEL: "info"
+    ports:
+      - '${BACK_END_PORT}}:${PORT}'
+    depends_on:
+      - mysql
+  frontend:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    container_name: voice-frontend
+    environment:
+      - PORT=${PORT}
+    ports:
+      - '${FRONT_END_PORT}:${PORT}'
+  grafana:
+    image: grafana/grafana-enterprise
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+     - '${GRAFANA_PORT}:3000'
+    volumes:
+      - grafana:/var/lib/grafana
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib
+    container_name: otel-collector
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+    ports:
+      - 1888:1888 # pprof extension
+      - 8888:8888 # Prometheus metrics exposed by the Collector
+      - 8889:8889 # Prometheus exporter metrics
+      - 13133:13133 # health_check extension
+      - 4317:4317 # OTLP gRPC receiver
+      - 4318:4318 # OTLP http receiver
+      - 55679:55679 # zpages extension
+  tempo:
+    image: grafana/tempo:latest
+    container_name: voice-tempo
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./tempo.yaml:/etc/tempo.yaml
+      - tempo-data:/tmp/tempo
+    ports:
+      - 3200  # tempo
+      - 4317  # otlp grpc
+      - 4318  # otlp http
+  mysql:
+    image: mysql:5.7
+    restart: always
+    container_name: voice-sql
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - ${MYSQL_PORT}:${MYSQL_PORT}
+    expose:
+      - ${MYSQL_PORT}
+    volumes:
+      - mysql:/var/lib/mysql
+volumes:
+  mongodb:
+  mysql:
+  strapi:
+  grafana:
+  tempo-data:

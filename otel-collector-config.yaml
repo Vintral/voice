@@ -1,0 +1,45 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:        
+  hostmetrics:
+    scrapers:
+      cpu:
+      disk:
+      filesystem:
+      load:
+      memory:
+      network:
+      process:
+      processes:
+      paging:
+
+processors:
+  batch:
+
+exporters:
+  logging:
+    loglevel: info
+  otlp:
+    endpoint: http://tempo:4317
+    tls:
+      insecure: true
+      insecure_skip_verify: true
+
+extensions:
+  health_check:
+  pprof:  
+
+service:
+  telemetry:
+    logs:
+      level: DEBUG
+    metrics:
+      level: detailed
+  extensions: [health_check, pprof]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp,logging]
