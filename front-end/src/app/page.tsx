@@ -9,7 +9,6 @@ import {
   TestPayload, 
 //  Payload 
 } from './types';
-import { getServerSession } from "next-auth/next";
 
 export default async function Home() {
   let data:TestPayload;
@@ -159,14 +158,12 @@ export default async function Home() {
   //     </div>
   //   </main>
   // )
-
-  const session = await getServerSession();  
     
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">      
       <>
         <p className="text-3xl">
-          Welcome to the App, {session?.user?.name}! You&apos;re authenticated!
+          Welcome to the App!
         </p>        
       </>
     </main>
