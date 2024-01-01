@@ -22,10 +22,11 @@ exporters:
   logging:
     loglevel: info
   otlp:
-    endpoint: http://tempo:4317
+    endpoint: tempo:4317
     tls:
-      insecure: true
-      insecure_skip_verify: true
+      insecure: true      
+  prometheus:
+    endpoint: otel-collector:8889
 
 extensions:
   health_check:
@@ -43,3 +44,7 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [otlp,logging]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [logging, prometheus]
