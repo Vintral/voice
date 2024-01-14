@@ -3,7 +3,7 @@ package models
 type User struct {
 	BaseModel
 
-	Email     string `gorm:"unique" json:"email"`
+	Email     string `gorm:"uniqueIndex,size:64" json:"email"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Address1  string `json:"address_1"`
