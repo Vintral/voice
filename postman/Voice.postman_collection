@@ -1,247 +1,776 @@
 {
 	"info": {
-		"_postman_id": "5a9f2230-0cb3-40d5-91ef-b2e64637b462",
-		"name": "VoiceAPI",
+		"_postman_id": "53420d5f-a878-41a4-9c3a-e66d6af6805a",
+		"name": "Voice",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "Health",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{API_URL}}",
-					"host": [
-						"{{API_URL}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Generate Token",
-			"event": [
+			"name": "Public",
+			"item": [
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"if( responseCode.code === 200 ) postman.setEnvironmentVariable( \"COGNITO_TOKEN\", responseBody );"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{API_URL}}/auth/generate",
-					"host": [
-						"{{API_URL}}"
+					"name": "Issues",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if( responseCode.code === 200 ) {\r",
+									"    var data = pm.response.json();\r",
+									"    if( data.length > 0 ) \r",
+									"        pm.environment.set(\"ISSUE_GUID\", data[0].guid);\r",
+									"}\r",
+									"\r",
+									"const token = pm.environment.get( \"TOKEN\" );\r",
+									"if( !token ) throw new Error( \"Missing token\" );\r",
+									"\r",
+									"const url = pm.environment.get( \"API_URL\" );\r",
+									"pm.sendRequest({\r",
+									"    url: url + \"/public/issues\",    \r",
+									"}, ( err, res ) => {\r",
+									"    if( err ) throw new Error( err );\r",
+									"    \r",
+									"    const statusCode = 200;\r",
+									"    const data = res.json();\r",
+									"    \r",
+									"    pm.test( \"Status to be \" + statusCode, () => {\r",
+									"        pm.expect( res.code ).equal( statusCode );\r",
+									"    })\r",
+									"\r",
+									"    pm.test( \"Expect Local Variable to be set\", () => {   \r",
+									"        if( data.length > 1 )     \r",
+									"            pm.expect( pm.environment.get(\"ISSUE_GUID\") ).eq( data[0].guid )\r",
+									"        else \r",
+									"            throw new Error( \"No Issues retrieved\" );\r",
+									"    })\r",
+									"\r",
+									"    pm.test( \"Response to contain items\", () => {\r",
+									"        if( data.length > 1 )\r",
+									"            pm.expect( data.length ).gte( 1 )\r",
+									"        else\r",
+									"            throw new Error( \"No Issues retrieved\" );\r",
+									"    })\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
 					],
-					"path": [
-						"auth",
-						"generate"
-					]
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_URL}}/public/issues",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"public",
+								"issues"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "User",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
+			"name": "Admin",
+			"item": [
+				{
+					"name": "Issues",
+					"event": [
 						{
-							"key": "token",
-							"value": "{{COGNITO_TOKEN}}",
-							"type": "string"
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if( responseCode.code === 200 ) {\r",
+									"    var data = pm.response.json();\r",
+									"    if( data.length > 0 )\r",
+									"        pm.environment.set(\"ISSUE_GUID\", data[0].guid);\r",
+									"}\r",
+									"\r",
+									"const token = pm.environment.get( \"TOKEN\" );\r",
+									"if( !token ) throw new Error( \"Missing token\" );\r",
+									"\r",
+									"const url = pm.environment.get( \"API_URL\" );\r",
+									"pm.sendRequest({\r",
+									"    url: url + \"/admin/issues\",\r",
+									"    header: {        \r",
+									"        'Authorization': \"Bearer \" + token,\r",
+									"    },\r",
+									"}, ( err, res ) => {\r",
+									"    if( err ) throw new Error( err );\r",
+									"    \r",
+									"    const statusCode = 200;\r",
+									"    const data = res.json();        \r",
+									"    \r",
+									"    pm.test( \"Status to be \" + statusCode, () => {\r",
+									"        pm.expect( res.code ).equal( statusCode );\r",
+									"    })\r",
+									"\r",
+									"    pm.test( \"Expect Local Variable to be set\", () => {\r",
+									"        if( data.length > 0 )             \r",
+									"            pm.expect( pm.environment.get(\"ISSUE_GUID\") ).eq( data[0].guid )\r",
+									"        else\r",
+									"            throw new Error( \"No Issues retrieved\" );\r",
+									"    })\r",
+									"\r",
+									"    pm.test( \"Response to contain items\", () => {\r",
+									"        pm.expect( data.length ).gte( 1 )\r",
+									"    })\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
 						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{API_URL}}/user",
-					"host": [
-						"{{API_URL}}"
 					],
-					"path": [
-						"user"
-					]
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{API_URL}}/admin/issues",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"admin",
+								"issues"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "User",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
+			"name": "Protected",
+			"item": [
+				{
+					"name": "User",
+					"event": [
 						{
-							"key": "token",
-							"value": "{{COGNITO_TOKEN}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "PATCH",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"FirstName\": \"Jane\",\r\n    \"LastName\": \"Doe\",\r\n    \"Address1\": \"123 Nowhere St\",\r\n    \"Address2\": \"Apt B\",\r\n    \"City\": \"Somewhere\",\r\n    \"State\": \"MO\",\r\n    \"Zip\": \"12345\"\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{API_URL}}/user",
-					"host": [
-						"{{API_URL}}"
-					],
-					"path": [
-						"user"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Donations",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
-						{
-							"key": "token",
-							"value": "{{COGNITO_TOKEN}}",
-							"type": "string"
-						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{API_URL}}/user/donations?per=10&page=1",
-					"host": [
-						"{{API_URL}}"
-					],
-					"path": [
-						"user",
-						"donations"
-					],
-					"query": [
-						{
-							"key": "per",
-							"value": "10"
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
 						},
 						{
-							"key": "page",
-							"value": "1"
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();\r",
+									"\r",
+									"const token = pm.environment.get( \"TOKEN\" );\r",
+									"if( !token ) throw new Error( \"Missing token\" );\r",
+									"\r",
+									"const defaultUser = pm.variables.get( \"DEFAULT_USER\" );\r",
+									"if( !defaultUser ) throw new Error( \"Missing Default User\" );\r",
+									"\r",
+									"const url = pm.environment.get( \"API_URL\" );\r",
+									"pm.sendRequest({\r",
+									"    url: url + \"/user\",\r",
+									"    method: \"GET\",\r",
+									"    header: {                \r",
+									"        'Authorization': \"Bearer \" + token,\r",
+									"    },\r",
+									"    body: JSON.stringify( defaultUser )\r",
+									"}, ( err, res ) => {        \r",
+									"    if( err ) throw new Error( err );\r",
+									"\r",
+									"    const statusCode = 200;\r",
+									"    const data = res.json();\r",
+									"    \r",
+									"    pm.test( \"Status to be \" + statusCode, () => {\r",
+									"        pm.expect( res.code ).equal( statusCode );\r",
+									"    })\r",
+									"\r",
+									"    pm.test( \"Expect Email to match\", () => {\r",
+									"        pm.expect( data.email ).equal( pm.variables.get( \"DEFAULT_EMAIL\" ) );\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
 						}
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Donation",
-			"event": [
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_URL}}/user",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
 				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"if( responseCode.code === 201 ) postman.setEnvironmentVariable( \"DONATION_GUID\", responseBody.guid );"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
+					"name": "User",
+					"event": [
 						{
-							"key": "token",
-							"value": "{{COGNITO_TOKEN}}",
-							"type": "string"
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();\r",
+									"\r",
+									"const defaultUserReturn = pm.variables.get( \"DEFAULT_USER_RETURN\" )\r",
+									"const defaultUser = pm.variables.get( \"DEFAULT_USER\" )\r",
+									"\r",
+									"const token = pm.environment.get( \"TOKEN\" );\r",
+									"if( !token ) throw new Error( \"Missing token\" );\r",
+									"\r",
+									"const defaultEmail = pm.variables.get( \"DEFAULT_EMAIL\" );\r",
+									"if( !defaultEmail ) throw new Error( \"Missing Default Email\" );\r",
+									"\r",
+									"const convertKey = ( val ) => {\r",
+									"    switch( val ) {\r",
+									"        case \"FirstName\": return \"first_name\";\r",
+									"        case \"LastName\": return \"last_name\";\r",
+									"        case \"Address1\": return \"address_1\";\r",
+									"        case \"Address2\": return \"address_2\";\r",
+									"        case \"City\": return \"city\";\r",
+									"        case \"State\": return \"state\";\r",
+									"        case \"Zip\": return \"zip\";\r",
+									"        case \"Email\": return \"email\";\r",
+									"        default: return \"MISSING-CONVERSION\";\r",
+									"    }\r",
+									"}\r",
+									"\r",
+									"const url = pm.environment.get( \"API_URL\" );\r",
+									"pm.sendRequest({\r",
+									"    url: url + \"/user\",\r",
+									"    method: \"PATCH\",\r",
+									"    header: {        \r",
+									"        'content-type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + token,\r",
+									"    },\r",
+									"    body: JSON.stringify( defaultUser )\r",
+									"}, ( err, res ) => {\r",
+									"    if( err ) throw new Error( err );\r",
+									"\r",
+									"    const statusCode = 200;\r",
+									"    const data = res.json();    \r",
+									"\r",
+									"    pm.test( \"Status to be \" + statusCode, () => {\r",
+									"        pm.expect( res.code ).equal( statusCode );    \r",
+									"    })\r",
+									"\r",
+									"    pm.test( \"Expect email to match \\\"\" + defaultEmail + \"\\\"\", () => {\r",
+									"        pm.expect( data.email ).eq( defaultEmail );\r",
+									"    })\r",
+									"\r",
+									"    pm.test( \"Expect valid payload\", () => {\r",
+									"        Object.keys( defaultUser ).forEach( key => {\r",
+									"            pm.expect( data[ convertKey( key ) ] ).eq( defaultUser[ key ] );\r",
+									"        })\r",
+									"    });\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
 						}
-					]
-				},
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n    \"issue\": \"ee9ea9e8-0151-473b-b7e7-db1fd01d18b9\",\r\n    \"amount\": 5.55\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{API_URL}}/user/donation",
-					"host": [
-						"{{API_URL}}"
 					],
-					"path": [
-						"user",
-						"donation"
-					]
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"FirstName\": \"Jane\",\r\n    \"LastName\": \"Doe\",\r\n    \"Address1\": \"123 Nowhere St\",\r\n    \"Address2\": \"Apt C\",\r\n    \"City\": \"Somewhere\",\r\n    \"State\": \"MO\",\r\n    \"Zip\": \"12345\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_URL}}/user",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"user"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Donations",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if( responseCode.code === 200 ) {\r",
+									"    var data = pm.response.json();\r",
+									"    if( data.length > 0 ) \r",
+									"        pm.environment.set(\"DONATION_GUID\", data[0].guid);\r",
+									"}\r",
+									"\r",
+									"const token = pm.environment.get( \"TOKEN\" );\r",
+									"if( !token ) throw new Error( \"Missing token\" );\r",
+									"\r",
+									"const perPage = 10;\r",
+									"const page = 1;\r",
+									"\r",
+									"const url = pm.environment.get( \"API_URL\" );\r",
+									"\r",
+									"const cleanUp = () => {\r",
+									"    const donationKey = \"TEMPORARY_DONATION\";\r",
+									"\r",
+									"    pm.sendRequest({\r",
+									"        url: url + \"/user/donation/\" + pm.variables.get( donationKey ),\r",
+									"        method: \"DELETE\",\r",
+									"        header: {        \r",
+									"            'Authorization': \"Bearer \" + token,\r",
+									"        },\r",
+									"    }, ( err, res ) => {\r",
+									"        if( err ) throw new Error( err );        \r",
+									"        \r",
+									"        const data = res.json();        \r",
+									"        \r",
+									"        const donation = pm.variables.get( donationKey );\r",
+									"        pm.variables.unset( donationKey );\r",
+									"        \r",
+									"        pm.test( \"Expect Delete to succeed\", () => {\r",
+									"            pm.expect( pm.response.code ).equal( 200 );\r",
+									"            pm.expect( data.guid ).equal( donation );\r",
+									"            pm.expect( data.status ).equal( \"deleted\" );\r",
+									"        })\r",
+									"    })\r",
+									"}\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: url + \"/user/donations?per=\" + perPage + \"&page=\" + page,\r",
+									"    header: {        \r",
+									"        'Authorization': \"Bearer \" + token,\r",
+									"    },\r",
+									"}, ( err, res ) => {\r",
+									"    if( err ) throw new Error( err );\r",
+									"\r",
+									"    const statusCode = 200;\r",
+									"    const data = res.json();\r",
+									"    \r",
+									"    pm.test( \"Status to be \" + statusCode, () => {\r",
+									"        pm.expect( res.code ).equal( statusCode )    \r",
+									"    })\r",
+									"\r",
+									"    pm.test( \"Expect Local Variable to be set\", () => {        \r",
+									"        if( data.length >= 1 )\r",
+									"            pm.expect( pm.environment.get(\"DONATION_GUID\") ).eq( data[0].guid )\r",
+									"        else\r",
+									"            throw new Error( \"No Donations retrieved\" );\r",
+									"    })\r",
+									"\r",
+									"    pm.test( \"Response to contain items\", () => {\r",
+									"        pm.expect( data.length ).gte( 1 )\r",
+									"    })\r",
+									"    \r",
+									"    pm.test( \"Response to have less than \" + perPage + \" items\", () => {\r",
+									"        pm.expect( data.length ).lte( perPage );\r",
+									"    })\r",
+									"\r",
+									"    cleanUp();    \r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const url = pm.environment.get( \"API_URL\" );\r",
+									"if( !url ) throw new Error( \"Missing API Url\" );\r",
+									"\r",
+									"const token = pm.environment.get( \"TOKEN\" );\r",
+									"if( !token ) throw new Error( \"Missing token\" );\r",
+									"\r",
+									"const defaultDonation = pm.variables.get( \"DEFAULT_DONATION\" );\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: url + \"/user/donation\",\r",
+									"    method: \"POST\",\r",
+									"    header: {        \r",
+									"        'content-type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + token\r",
+									"    },\r",
+									"    body: JSON.stringify( defaultDonation )\r",
+									"}, ( err, res ) => {\r",
+									"    if( err ) throw new Error( err );\r",
+									"\r",
+									"    const data = res.json();\r",
+									"    pm.variables.set( \"TEMPORARY_DONATION\", data.guid );\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_URL}}/user/donations?per=10&page=1",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"user",
+								"donations"
+							],
+							"query": [
+								{
+									"key": "per",
+									"value": "10"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Donation",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if( responseCode.code === 201 ) {\r",
+									"    var data = pm.response.json();\r",
+									"    \r",
+									"    pm.environment.set(\"DONATION_GUID\", data.guid);\r",
+									"}\r",
+									"\r",
+									"const token = pm.environment.get( \"TOKEN\" );\r",
+									"if( !token ) throw new Error( \"Missing token\" );\r",
+									"\r",
+									"const defaultDonation = pm.variables.get( \"DEFAULT_DONATION\" );\r",
+									"const status = \"created\";\r",
+									"\r",
+									"const url = pm.environment.get( \"API_URL\" );\r",
+									"\r",
+									"const cleanUp = ( guid ) => {\r",
+									"    pm.sendRequest({\r",
+									"        url: url + \"/user/donation/\" + guid,\r",
+									"        method: \"DELETE\",\r",
+									"        header: {        \r",
+									"            'Authorization': \"Bearer \" + token,\r",
+									"        },\r",
+									"    }, ( err, res ) => {\r",
+									"        if( err ) throw new Error( err );\r",
+									"                \r",
+									"        const data = res.json();        \r",
+									"        \r",
+									"        pm.test( \"Expect Delete to succeed\", () => {\r",
+									"            pm.expect( res.code ).equal( 200 );\r",
+									"            pm.expect( data.guid ).equal( guid );\r",
+									"            pm.expect( data.status ).equal( \"deleted\" );\r",
+									"        })\r",
+									"    })\r",
+									"}\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: url + \"/user/donation\",\r",
+									"    method: \"POST\",\r",
+									"    header: {\r",
+									"        'content-type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + token,\r",
+									"    },\r",
+									"    body: JSON.stringify( defaultDonation )\r",
+									"}, ( err, res ) => {\r",
+									"    if( err ) throw new Error( err );\r",
+									"\r",
+									"    const statusCode = 201;\r",
+									"    const data = res.json();    \r",
+									"    \r",
+									"    pm.test( \"Status to be \" + statusCode, () => {\r",
+									"        pm.expect( pm.response.code ).equal( statusCode )    \r",
+									"    } );\r",
+									"\r",
+									"    pm.test( \"Expect status to be \\\"\" + status + \"\\\"\", () => {\r",
+									"        pm.expect( data.status ).equal( status );\r",
+									"    } );\r",
+									"\r",
+									"    pm.test( \"Expect amount to be \" + defaultDonation.Amount, () => {\r",
+									"        pm.expect( data.amount ).equal( defaultDonation.Amount );\r",
+									"    } );\r",
+									"\r",
+									"    cleanUp( data.guid );    \r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"issue\": \"{{ISSUE_GUID}}\",\r\n    \"amount\": 5.55\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{API_URL}}/user/donation",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"user",
+								"donation"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Donation",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const url = pm.environment.get( \"API_URL\" );\r",
+									"if( !url ) throw new Error( \"Missing API Url\" );\r",
+									"\r",
+									"const token = pm.environment.get( \"TOKEN\" );\r",
+									"if( !token ) throw new Error( \"Missing token\" );\r",
+									"\r",
+									"const defaultDonation = pm.variables.get( \"DEFAULT_DONATION\" );\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: url + \"/user/donation\",\r",
+									"    method: \"POST\",\r",
+									"    header: {        \r",
+									"        'content-type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + token\r",
+									"    },\r",
+									"    body: JSON.stringify( defaultDonation )\r",
+									"}, ( err, res ) => {\r",
+									"    if( err ) throw new Error( err );\r",
+									"\r",
+									"    const data = res.json();    \r",
+									"\r",
+									"    pm.variables.set( \"TEMPORARY_DONATION\", data.guid );\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url = pm.environment.get( \"API_URL\" );\r",
+									"if( !url ) throw new Error( \"Missing API Url\" );\r",
+									"\r",
+									"const token = pm.environment.get( \"TOKEN\" );\r",
+									"if( !token ) throw new Error( \"Missing token\" );\r",
+									"\r",
+									"const defaultDonation = pm.variables.get( \"DEFAULT_DONATION\" );\r",
+									"const temporaryDonationKey = \"TEMPORARY_DONATION\";\r",
+									"const donation = pm.variables.get( temporaryDonationKey );\r",
+									"\r",
+									"const cleanUp = () => {    \r",
+									"    pm.variables.unset( \"TEMPORARY_DONATION\" );\r",
+									"}\r",
+									"\r",
+									"pm.sendRequest({\r",
+									"    url: url + \"/user/donation/\" + donation,\r",
+									"    method: \"DELETE\",\r",
+									"    header: {        \r",
+									"        'content-type': 'application/json',\r",
+									"        'Authorization': \"Bearer \" + token\r",
+									"    },\r",
+									"    body: JSON.stringify( defaultDonation )\r",
+									"}, ( err, res ) => {\r",
+									"    const statusCode = 200;\r",
+									"    const status = \"deleted\";\r",
+									"\r",
+									"    const data = res.json();        \r",
+									"\r",
+									"    pm.test( \"Status code to be \" + statusCode, () => {\r",
+									"        pm.expect( res.code ).equal( statusCode );\r",
+									"    } );\r",
+									"\r",
+									"    pm.test( \"Status to be \\\"\" + status + \"\\\"\", () => {\r",
+									"        pm.expect( data.status ).equal( status );\r",
+									"    } );\r",
+									"\r",
+									"    pm.test( \"Amount to be \" + defaultDonation.Amount, () => {\r",
+									"        pm.expect( data.amount ).equal( defaultDonation.Amount );\r",
+									"    } );\r",
+									"\r",
+									"    pm.test( \"Expect guid to match \\\"\" + donation + \"\\\"\", () => {\r",
+									"        pm.expect( data.guid ).equal( donation );\r",
+									"    })\r",
+									"\r",
+									"    cleanUp();\r",
+									"})"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{API_URL}}/user/donation/{{DONATION_GUID}}",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"user",
+								"donation",
+								"{{DONATION_GUID}}"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		},
 		{
-			"name": "Donation",
-			"request": {
-				"method": "DELETE",
-				"header": [],
-				"url": {
-					"raw": "{{API_URL}}/user/donation",
-					"host": [
-						"{{API_URL}}"
-					],
-					"path": [
-						"user",
-						"donation"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Issues",
-			"request": {
-				"auth": {
-					"type": "bearer",
-					"bearer": [
+			"name": "Utility",
+			"item": [
+				{
+					"name": "Health",
+					"event": [
 						{
-							"key": "token",
-							"value": "{{COGNITO_TOKEN}}",
-							"type": "string"
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const url = pm.environment.get( \"API_URL\" );\r",
+									"pm.sendRequest({\r",
+									"    url,    \r",
+									"}, ( err, res ) => {       \r",
+									"    const statusCode = 200;\r",
+									"    const expectedBody = \"OK\";\r",
+									"    const data = res.text();    \r",
+									"   \r",
+									"    pm.test( \"Status code to be \" + statusCode, () => {\r",
+									"        pm.expect( res.code ).equal( statusCode );\r",
+									"    } );\r",
+									"\r",
+									"    pm.test( \"Body to be \\\"\" + expectedBody + \"\\\"\", () => {    \r",
+									"        pm.expect( data ).equal( expectedBody );\r",
+									"    })    \r",
+									"} )"
+								],
+								"type": "text/javascript"
+							}
 						}
-					]
-				},
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{API_URL}}/admin/issues",
-					"host": [
-						"{{API_URL}}"
 					],
-					"path": [
-						"admin",
-						"issues"
-					]
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_URL}}",
+							"host": [
+								"{{API_URL}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if( responseCode.code === 200 ) {\r",
+									"    postman.setEnvironmentVariable( \"TOKEN\", responseBody );\r",
+									"}\r",
+									"\r",
+									"const url = pm.environment.get( \"API_URL\" );\r",
+									"pm.sendRequest({\r",
+									"    url: url + \"/auth\",    \r",
+									"}, ( err, res ) => {       \r",
+									"    const statusCode = 200; \r",
+									"    const data = res.text();    \r",
+									"   \r",
+									"    pm.test( \"Status code to be \" + statusCode, () => {\r",
+									"        pm.expect( res.code ).equal( statusCode );\r",
+									"    } );\r",
+									"\r",
+									"    pm.test( \"Response body to have data\", () => {    \r",
+									"        pm.expect( data.length ).gt( 0 );\r",
+									"    })\r",
+									"\r",
+									"    pm.test( \"Response body to be JWT format\", () => {        \r",
+									"        pm.expect( data.split(\".\").length ).eq( 3 )\r",
+									"    })\r",
+									"} )"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{API_URL}}/auth",
+							"host": [
+								"{{API_URL}}"
+							],
+							"path": [
+								"auth"
+							]
+						}
+					},
+					"response": []
 				}
-			},
-			"response": []
+			]
 		}
 	],
 	"auth": {
@@ -249,7 +778,7 @@
 		"bearer": [
 			{
 				"key": "token",
-				"value": "{{AUTH_TOKEN}}",
+				"value": "{{TOKEN}}",
 				"type": "string"
 			}
 		]
@@ -260,7 +789,66 @@
 			"script": {
 				"type": "text/javascript",
 				"exec": [
-					""
+					"const url = pm.environment.get( \"API_URL\" );",
+					"const token = pm.environment.get( \"TOKEN\" );",
+					"const issue = pm.environment.get( \"ISSUE_GUID\" );",
+					"",
+					"const defaultAmount = 5.55;",
+					"pm.variables.set( \"DEFAULT_AMOUNT\", defaultAmount );",
+					"",
+					"const defaultEmail = \"jane.doe@email.com\"",
+					"pm.variables.set( \"DEFAULT_EMAIL\", defaultEmail );",
+					"",
+					"const defaultUser = {",
+					"    FirstName: \"Jane\",",
+					"    LastName: \"Doe\",",
+					"    Address1: \"123 Nowhere St\",",
+					"    Address2: \"Apt C\",",
+					"    City: \"Somewhere\",",
+					"    State: \"MO\",",
+					"    Zip: \"12345\"",
+					"}",
+					"pm.variables.set( \"DEFAULT_USER\", defaultUser );",
+					"",
+					"let defaultDonation = {}",
+					"",
+					"const retrieveToken = () => {",
+					"    pm.sendRequest({",
+					"        url: url + \"/auth\",    ",
+					"    }, ( err, res ) => {",
+					"        if( err ) throw new Error( err );",
+					"        ",
+					"        const data = res.text();",
+					"        if( !data ) throw new Error( \"Error retrieving Token\" );",
+					"        ",
+					"        pm.environment.set( \"TOKEN\", data );",
+					"        retrieveIssue();",
+					"    } )",
+					"}",
+					"",
+					"const retrieveIssue = () => {",
+					"    pm.sendRequest({",
+					"        url: url + \"/public/issues\",",
+					"    }, ( err, res ) => {",
+					"        if( err ) throw new Error( err );",
+					"",
+					"        const data = res.json();",
+					"        ",
+					"        if( data.length > 0 ) {",
+					"            pm.environment.set( \"ISSUE_GUID\", data[ 0 ].guid );",
+					"",
+					"            defaultDonation = {",
+					"                \"Issue\": data[ 0 ].guid,",
+					"                \"Amount\": defaultAmount",
+					"            }",
+					"            pm.variables.set( \"DEFAULT_DONATION\", defaultDonation );",
+					"        } else {",
+					"            throw new Error( \"Error retrieving Issue GUID\" );",
+					"        }",
+					"    });",
+					"}",
+					"",
+					"retrieveToken();"
 				]
 			}
 		},

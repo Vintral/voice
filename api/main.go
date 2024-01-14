@@ -85,6 +85,11 @@ func setupRoutes() (router *gin.Engine) {
 	router.GET("/", controller.HealthCheck)
 	router.GET("/auth", controller.GenerateToken)
 
+	publicRoutes := router.Group("/public")
+	{
+		publicRoutes.GET("/issues", controller.GetIssues)
+	}
+
 	adminRoutes := router.Group("/admin", Authorizer(), AdminAuthorizer())
 	{
 		adminRoutes.GET("/issues", controller.GetIssues)
