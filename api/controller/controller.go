@@ -171,7 +171,6 @@ func DeleteDonation(c *gin.Context) {
 		}
 		transaction.WithContext(ctx).Commit()
 
-		c.String(http.StatusOK, "OK")
 		c.IndentedJSON(http.StatusOK, donation)
 	} else {
 		span.AddEvent("error", trace.WithAttributes(
