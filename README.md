@@ -17,7 +17,7 @@ To tear down environment run `docker compose down`
 ### Backend
 Generic REST API backend written up in `Go` with middleware authentication connecting up to a `MySQL` database backend leveraging `Gorm` framework.
 
-`postman` directory contains some files for available requests and environment setup
+`postman` directory contains some files for available requests and environment setup.  Once imported into Postman, these will setup the environment and add a collection with the endpoints.  All endpoints have tests, and the collection can be run with tests.  GUID for last entered entities will be saved for use with corresponding delete or patch routes.
 
 ### Frontend
 No real progress beyond boilerplate setup
