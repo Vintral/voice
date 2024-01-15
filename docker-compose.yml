@@ -20,7 +20,7 @@ services:
       OTEL_SERVICE: "voice-backend"
       OTEL_LOG_LEVEL: "info"
     ports:
-      - '3001:${PORT}'
+      - 3001:${PORT}
     depends_on:
       - mysql
   frontend:
@@ -37,23 +37,31 @@ services:
     container_name: grafana
     restart: unless-stopped
     ports:
-     - '3004:3000'
+     - 3004:3000
+    environment:
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_BASIC_ENABLED=false
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
     volumes:
-      - ./grafana-data.yaml:/etc/grafana/provisioning/datasources/config.yaml
-      - grafana:/var/lib/grafana      
+      - ./grafana/data.yaml:/etc/grafana/provisioning/datasources/config.yaml
+      - ./grafana/dashboard.yaml:/etc/grafana/provisioning/dashboards/dashboard.yaml
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - grafana:/var/lib/grafana
   otel-collector:
     image: otel/opentelemetry-collector-contrib
     container_name: otel-collector
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
-      - 1888:1888 # pprof extension
-      - 8888:8888 # Prometheus metrics exposed by the Collector
-      - 8889:8889 # Prometheus exporter metrics
-      - 13133:13133 # health_check extension
-      - 4317:4317 # OTLP gRPC receiver
-      - 4318:4318 # OTLP http receiver
-      - 55679:55679 # zpages extension
+      - 1888:1888
+      - 8888:8888
+      - 8889:8889
+      - 13133:13133
+      - 4317:4317
+      - 4318:4318
+      - 55679:55679
   tempo:
     image: grafana/tempo:latest
     container_name: voice-tempo
@@ -62,9 +70,9 @@ services:
       - ./tempo.yaml:/etc/tempo.yaml
       - tempo:/tmp/tempo
     ports:
-      - 3200  # tempo
-      - 4317  # otlp grpc
-      - 4318  # otlp http
+      - 3200
+      - 4317
+      - 4318
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -80,6 +88,19 @@ services:
       - '--web.enable-lifecycle'
     expose:
       - 9090
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    # to get into shell for debug: "docker-compose run k6"
+    # entrypoint: /bin/sh
+    # user: root
+    ports:
+      - 6565:6565
+    environment:
+      K6_OUT: "influxdb=http://influxdb:8086/k6"
+      API_URL: "http://host.docker.internal:3001"
+    volumes:
+      - ./k6/scripts:/scripts
   mysql:
     image: mysql:5.7
     restart: always
@@ -95,6 +116,14 @@ services:
       - 3306
     volumes:
       - mysql:/var/lib/mysql
+  influxdb:  
+    image: influxdb:1.8
+    container_name: influx
+    ports:
+      - 8086:8086
+    environment:
+      - INFLUXDB_DB=k6
+
 volumes:
   mysql:
   grafana:
