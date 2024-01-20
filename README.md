@@ -25,6 +25,14 @@ No real progress beyond boilerplate setup
 ### Grafana
 Default login the first time will be `admin` for username and password.  Should have data sources provisioned out of the box to wire up to view traces. On the side nav, select `Explore`, make sure that `Tempo` is selected in the dropdown box. Set the query type to `Search` and traces should be viewable providing requests have been sent to the backend.
 
+### Run scripts
+
+Written up in `.bat` files, but commands can be pulled out and run.
+
+- `run` will start up containers
+- `stop` will kill off containers
+- `load-test` will execute load-test script
+
 ### Viewing
 - [Frontend](http://localhost:3000/)
 - [Grafana Dashboard](http://localhost:3004/)
