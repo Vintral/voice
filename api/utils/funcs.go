@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"os"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,4 +13,11 @@ func GetEmailFromContext(c *gin.Context) string {
 	}
 
 	return ""
+}
+
+func GetEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }

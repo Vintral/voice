@@ -3,6 +3,7 @@ package main
 import (
 	"api/controller"
 	"api/models"
+	"api/otel"
 	"context"
 	"errors"
 	"fmt"
@@ -58,7 +59,7 @@ func main() {
 	fmt.Println("Env Variables:")
 	fmt.Println(os.Environ())
 
-	otelShutdown, tp, err := setupOTelSDK(ctx)
+	otelShutdown, tp, err := otel.SetupOTelSDK(ctx)
 	if err != nil {
 		fmt.Println(err)
 		return

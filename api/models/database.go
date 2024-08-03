@@ -25,6 +25,7 @@ func Database(retry bool) (*gorm.DB, error) {
 	DB_NAME := os.Getenv("DB_NAME")
 
 	dsn := DB_USER + ":" + DB_PASSWORD + "@tcp(" + DB_HOST + ":" + DB_PORT + ")/" + DB_NAME + "?charset=utf8mb4&parseTime=True&loc=Local"
+	fmt.Println( "DSN: " + dsn )
 	dbase, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		if retry {

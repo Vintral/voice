@@ -2,35 +2,37 @@ receivers:
   otlp:
     protocols:
       grpc:
-      http:        
+      http:
   hostmetrics:
     scrapers:
       cpu:
-      disk:
-      filesystem:
-      load:
-      memory:
-      network:
-      process:
-      processes:
-      paging:
+      # disk:
+      # filesystem:
+      # load:
+      # memory:
+      # network:
+      # process:
+      # processes:
+      # paging:
 
 processors:
   batch:
 
 exporters:
   logging:
-    loglevel: info
   otlp:
-    endpoint: tempo:4317
-    tls:
-      insecure: true      
+    endpoint: "tempo:4317"
   prometheus:
+    namespace: "voice"
     endpoint: otel-collector:8889
+  prometheusremotewrite:
+    endpoint: http://prometheus:9090/api/v1/write
+    tls:
+      insecure: true
 
 extensions:
   health_check:
-  pprof:  
+  pprof:
 
 service:
   telemetry:
@@ -47,4 +49,4 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging, prometheus]
+      exporters: [logging, prometheusremotewrite]
