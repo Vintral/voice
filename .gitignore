@@ -3,3 +3,4 @@
 api-node/node_modules
 api-node/dist
 .env
+voice.code-workspace
